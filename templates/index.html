@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Task Analyzer</title>
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23000' width='100' height='100' rx='20'/><text y='.9em' font-size='80' x='50%' text-anchor='middle'>⚡</text></svg>">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="/static/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-lightning-charge-fill"></i>
+                <span>Smart Task Analyzer</span>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" data-section="dashboard">
+                            <i class="bi bi-grid-1x2-fill me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-section="tasks">
+                            <i class="bi bi-check2-square me-1"></i>Tasks
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-section="matrix">
+                            <i class="bi bi-grid-3x3-gap-fill me-1"></i>Matrix
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-section="settings">
+                            <i class="bi bi-sliders me-1"></i>Settings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Dashboard Section -->
+        <section id="dashboard-section" class="section-content">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">Dashboard</h2>
+                    <p style="font-size: 0.9375rem; color: #aaaaaa; margin-bottom: 0;">Manage and prioritize your tasks intelligently</p>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid mb-4">
+                <div class="stat-card" style="--stat-color: #fff;">
+                    <div class="stat-icon total">
+                        <i class="bi bi-layers"></i>
+                    </div>
+                    <div class="stat-value" id="stat-total">0</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+                <div class="stat-card" style="--stat-color: #ef4444;">
+                    <div class="stat-icon overdue">
+                        <i class="bi bi-exclamation-diamond"></i>
+                    </div>
+                    <div class="stat-value" id="stat-overdue">0</div>
+                    <div class="stat-label">Overdue</div>
+                </div>
+                <div class="stat-card" style="--stat-color: #f59e0b;">
+                    <div class="stat-icon urgent">
+                        <i class="bi bi-alarm"></i>
+                    </div>
+                    <div class="stat-value" id="stat-urgent">0</div>
+                    <div class="stat-label">Due Soon</div>
+                </div>
+                <div class="stat-card" style="--stat-color: #22c55e;">
+                    <div class="stat-icon quickwin">
+                        <i class="bi bi-lightning-charge"></i>
+                    </div>
+                    <div class="stat-value" id="stat-quickwins">0</div>
+                    <div class="stat-label">Quick Wins</div>
+                </div>
+            </div>
+
+            <!-- Top Suggestions -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="bi bi-stars"></i>Top Suggestions</h5>
+                    <button class="btn btn-sm btn-outline-light" onclick="refreshSuggestions()">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="suggestions-container" class="suggestions-grid">
+                        <div class="empty-state" style="grid-column: 1 / -1;">
+                            <div class="empty-state-icon">
+                                <i class="bi bi-inbox"></i>
+                            </div>
+                            <div class="empty-state-title">No suggestions yet</div>
+                            <div class="empty-state-text">Add tasks below to get AI-powered prioritization suggestions</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Task & Bulk Import -->
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5><i class="bi bi-plus-circle"></i>Add New Task</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="add-task-form">
+                                <div class="mb-3">
+                                    <label class="form-label">Task Title <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="task-title" 
+                                           placeholder="What needs to be done?" required>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-6">
+                                        <label class="form-label">Due Date <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" id="task-due-date" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label">Est. Hours <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="task-hours" 
+                                               min="1" step="1" value="2" required>
+                                    </div>
+                                </div>
+                                <div class="my-3">
+                                    <label class="form-label d-flex justify-content-between">
+                                        <span>Importance</span>
+                                        <span class="badge bg-secondary" id="importance-value">5</span>
+                                    </label>
+                                    <input type="range" class="form-range" id="task-importance" min="1" max="10" value="5">
+                                    <div class="d-flex justify-content-between" style="font-size: 0.75rem; color: #ffffff">
+                                        <span>Low priority</span>
+                                        <span>Critical</span>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label">Dependencies <span class="">(optional)</span></label>
+                                    <input type="text" class="form-control" id="task-dependencies" 
+                                           placeholder="Task IDs separated by commas">
+                                </div>
+                                <button type="submit" class="btn btn-light w-100">
+                                    <i class="bi bi-plus-lg"></i>Add Task
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5><i class="bi bi-braces"></i>Bulk Import</h5>
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <div class="mb-3 flex-grow-1">
+                                <label class="form-label">JSON Array of Tasks</label>
+                                <textarea class="form-control h-100" id="bulk-json" style="min-height: 200px;"
+                                          placeholder='[
+  {
+    "title": "Fix login bug",
+    "due_date": "2025-12-15",
+    "estimated_hours": 3,
+    "importance": 8,
+    "dependencies": []
+  }
+]'></textarea>
+                            </div>
+                            <button type="button" class="btn btn-outline-light w-100" onclick="importBulkTasks()">
+                                <i class="bi bi-upload"></i>Import Tasks
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tasks Section -->
+        <section id="tasks-section" class="section-content d-none">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+                <div>
+                    <h2 class="mb-1">Task Analysis</h2>
+                    <p style="font-size: 0.9375rem; color: #aaaaaa; margin-bottom: 0;">View and analyze your prioritized tasks</p>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <select class="form-select" id="sort-strategy" style="width: auto; min-width: 180px;">
+                        <option value="smart_balance">🎯 Smart Balance</option>
+                        <option value="fastest_wins">⚡ Fastest Wins</option>
+                        <option value="high_impact">🌟 High Impact</option>
+                        <option value="deadline_driven">📅 Deadline Driven</option>
+                    </select>
+                    <button class="btn btn-light" onclick="analyzeTasks()">
+                        <i class="bi bi-play-fill"></i>Analyze
+                    </button>
+                </div>
+            </div>
+
+            <!-- Strategy Info -->
+            <div class="alert alert-dark mb-4" id="strategy-description">
+                <strong>🎯 Smart Balance:</strong> Intelligently weighs urgency, importance, effort, and dependencies for optimal prioritization.
+            </div>
+
+            <!-- Tasks List -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="bi bi-list-check"></i>Analyzed Tasks</h5>
+                    <span class="badge bg-secondary" id="tasks-count">0 tasks</span>
+                </div>
+                <div class="card-body p-0">
+                    <div id="tasks-container" class="task-list p-3">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="bi bi-clipboard-data"></i>
+                            </div>
+                            <div class="empty-state-title">No tasks analyzed</div>
+                            <div class="empty-state-text">Add tasks from the Dashboard and click "Analyze" to see prioritized results</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Eisenhower Matrix Section -->
+        <section id="matrix-section" class="section-content d-none">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">Eisenhower Matrix</h2>
+                    <p style="font-size: 0.9375rem; color: #aaaaaa; margin-bottom: 0;">Visualize tasks by urgency and importance</p>
+                </div>
+                <button class="btn btn-outline-light" onclick="loadMatrix()">
+                    <i class="bi bi-arrow-clockwise"></i>Refresh
+                </button>
+            </div>
+
+            <div class="matrix-grid">
+                <!-- Do Now -->
+                <div class="matrix-quadrant do-now">
+                    <div class="matrix-quadrant-header">
+                        <h5><i class="bi bi-fire"></i>DO NOW</h5>
+                        <small>Urgent & Important</small>
+                    </div>
+                    <div class="matrix-quadrant-body" id="matrix-do-now">
+                        <div class="matrix-empty">
+                            <i class="bi bi-inbox d-block"></i>
+                            <p>No tasks in this quadrant</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schedule -->
+                <div class="matrix-quadrant schedule">
+                    <div class="matrix-quadrant-header">
+                        <h5><i class="bi bi-calendar-event"></i>SCHEDULE</h5>
+                        <small>Important, Not Urgent</small>
+                    </div>
+                    <div class="matrix-quadrant-body" id="matrix-schedule">
+                        <div class="matrix-empty">
+                            <i class="bi bi-inbox d-block"></i>
+                            <p>No tasks in this quadrant</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delegate -->
+                <div class="matrix-quadrant delegate">
+                    <div class="matrix-quadrant-header">
+                        <h5><i class="bi bi-person-plus"></i>DELEGATE</h5>
+                        <small>Urgent, Not Important</small>
+                    </div>
+                    <div class="matrix-quadrant-body" id="matrix-delegate">
+                        <div class="matrix-empty">
+                            <i class="bi bi-inbox d-block"></i>
+                            <p>No tasks in this quadrant</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Drop -->
+                <div class="matrix-quadrant drop">
+                    <div class="matrix-quadrant-header">
+                        <h5><i class="bi bi-trash3"></i>DROP / DEFER</h5>
+                        <small>Not Urgent, Not Important</small>
+                    </div>
+                    <div class="matrix-quadrant-body" id="matrix-drop">
+                        <div class="matrix-empty">
+                            <i class="bi bi-inbox d-block"></i>
+                            <p>No tasks in this quadrant</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings-section" class="section-content d-none">
+            <div class="mb-5">
+                <h2 class="mb-1">Settings</h2>
+                <p style="font-size: 0.9375rem; color: #aaaaaa; margin-bottom: 0;">Customize your task prioritization preferences</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Weight Configuration -->
+                <div class="col-lg-6">
+                    <div class="settings-panel">
+                        <div class="settings-panel-header">
+                            <div class="settings-panel-title">
+                                <div class="settings-panel-icon">
+                                    <i class="bi bi-sliders2"></i>
+                                </div>
+                                <div>
+                                    <h5>Custom Weights</h5>
+                                    <p>Adjust how factors influence priority</p>
+                                </div>
+                            </div>
+                            <div class="toggle-wrapper">
+                                <input class="form-check-input" type="checkbox" id="enable-custom-weights" role="switch">
+                            </div>
+                        </div>
+                        <div class="settings-panel-body" id="weights-config">
+                            <div class="weight-slider">
+                                <div class="weight-slider-header">
+                                    <div class="weight-info">
+                                        <i class="bi bi-alarm" style="color: #f59e0b;"></i>
+                                        <span class="weight-slider-label">Urgency</span>
+                                    </div>
+                                    <span class="weight-slider-value" id="urgency-weight-value">30%</span>
+                                </div>
+                                <input type="range" class="form-range" id="urgency-weight" min="0" max="100" value="30" disabled>
+                            </div>
+                            <div class="weight-slider">
+                                <div class="weight-slider-header">
+                                    <div class="weight-info">
+                                        <i class="bi bi-star-fill" style="color: #3b82f6;"></i>
+                                        <span class="weight-slider-label">Importance</span>
+                                    </div>
+                                    <span class="weight-slider-value" id="importance-weight-value">30%</span>
+                                </div>
+                                <input type="range" class="form-range" id="importance-weight" min="0" max="100" value="30" disabled>
+                            </div>
+                            <div class="weight-slider">
+                                <div class="weight-slider-header">
+                                    <div class="weight-info">
+                                        <i class="bi bi-lightning-charge-fill" style="color: #22c55e;"></i>
+                                        <span class="weight-slider-label">Effort (Quick Wins)</span>
+                                    </div>
+                                    <span class="weight-slider-value" id="effort-weight-value">20%</span>
+                                </div>
+                                <input type="range" class="form-range" id="effort-weight" min="0" max="100" value="20" disabled>
+                            </div>
+                            <div class="weight-slider">
+                                <div class="weight-slider-header">
+                                    <div class="weight-info">
+                                        <i class="bi bi-diagram-3-fill" style="color: #a855f7;"></i>
+                                        <span class="weight-slider-label">Blocking (Dependencies)</span>
+                                    </div>
+                                    <span class="weight-slider-value" id="blocking-weight-value">20%</span>
+                                </div>
+                                <input type="range" class="form-range" id="blocking-weight" min="0" max="100" value="20" disabled>
+                            </div>
+                            
+                            <div class="weight-total-bar" id="weights-total">
+                                <div class="weight-total-info">
+                                    <span>Total Weight</span>
+                                    <strong id="total-weight">100%</strong>
+                                </div>
+                                <div class="weight-total-progress">
+                                    <div class="weight-total-fill" style="width: 100%;"></div>
+                                </div>
+                                <small>Weights must sum to 100%</small>
+                            </div>
+                            
+                            <button class="btn btn-light w-100" onclick="saveWeights()" disabled id="save-weights-btn">
+                                <i class="bi bi-check-lg"></i>Save Weights
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Learning System & Date Intelligence -->
+                <div class="col-lg-6">
+                    <div class="settings-panel mb-4">
+                        <div class="settings-panel-header">
+                            <div class="settings-panel-title">
+                                <div class="settings-panel-icon ai">
+                                    <i class="bi bi-cpu"></i>
+                                </div>
+                                <div>
+                                    <h5>AI Learning System</h5>
+                                    <p>Optimize weights based on your feedback</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="settings-panel-body">
+                            <p class="settings-description">
+                                The learning system analyzes your feedback on suggestions and uses AI to optimize weights for better recommendations.
+                            </p>
+                            <div class="feedback-stats">
+                                <div class="feedback-stat helpful">
+                                    <div class="feedback-stat-icon">
+                                        <i class="bi bi-hand-thumbs-up-fill"></i>
+                                    </div>
+                                    <div class="feedback-stat-value" id="helpful-count">0</div>
+                                    <div class="feedback-stat-label">Helpful</div>
+                                </div>
+                                <div class="feedback-stat not-helpful">
+                                    <div class="feedback-stat-icon">
+                                        <i class="bi bi-hand-thumbs-down-fill"></i>
+                                    </div>
+                                    <div class="feedback-stat-value" id="not-helpful-count">0</div>
+                                    <div class="feedback-stat-label">Not Helpful</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-ai w-100" onclick="triggerLearning()">
+                                <i class="bi bi-stars"></i>Optimize with AI
+                            </button>
+                            <div id="learning-result" class="mt-3 d-none">
+                                <div class="success-message">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    <div>
+                                        <strong>Weights Optimized!</strong>
+                                        <p id="learning-reasoning"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-panel">
+                        <div class="settings-panel-header">
+                            <div class="settings-panel-title">
+                                <div class="settings-panel-icon date">
+                                    <i class="bi bi-calendar-week"></i>
+                                </div>
+                                <div>
+                                    <h5>Date Intelligence</h5>
+                                    <p>Smart deadline calculations</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="settings-panel-body">
+                            <div class="setting-option">
+                                <div class="setting-option-info">
+                                    <span class="setting-option-title">Consider Weekends & Holidays</span>
+                                    <span class="setting-option-desc">Azure OpenAI identifies corporate tasks and excludes weekends from urgency calculations for non-urgent business tasks.</span>
+                                </div>
+                                <div class="toggle-wrapper">
+                                    <input class="form-check-input" type="checkbox" id="consider-weekends" checked>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="notification-toast" class="toast" role="alert">
+            <div class="toast-header">
+                <i class="bi bi-bell me-2"></i>
+                <strong class="me-auto">Notification</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toast-message">Message here</div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="d-none">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>Processing...</p>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div class="modal fade" id="feedbackModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-chat-heart me-2"></i>Rate This Suggestion</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="feedback-task-title" class="mb-4" style="font-size: 0.9375rem;"></p>
+                    <div class="d-flex gap-3 mb-4">
+                        <button class="btn btn-outline-light flex-fill py-3" onclick="submitFeedback(true)" style="border-color: rgba(34, 197, 94, 0.5);">
+                            <i class="bi bi-hand-thumbs-up fs-4 d-block mb-2" style="color: #4ade80;"></i>
+                            Helpful
+                        </button>
+                        <button class="btn btn-outline-light flex-fill py-3" onclick="submitFeedback(false)" style="border-color: rgba(239, 68, 68, 0.5);">
+                            <i class="bi bi-hand-thumbs-down fs-4 d-block mb-2" style="color: #f87171;"></i>
+                            Not Helpful
+                        </button>
+                    </div>
+                    <div>
+                        <label class="form-label">Additional feedback <span class="">(optional)</span></label>
+                        <textarea class="form-control" id="feedback-text" rows="2" placeholder="Tell us more..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
